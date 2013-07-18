@@ -3,6 +3,12 @@ package net.minecraft.server;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
+// CraftBukkit start
+import org.bukkit.entity.Ageable;
+import org.bukkit.event.entity.EntityBornEvent;
+
+import com.google.common.collect.ImmutableList;
+// CraftBukkit end
 
 public class PathfinderGoalBreed extends PathfinderGoal {
 
@@ -75,8 +81,20 @@ public class PathfinderGoalBreed extends PathfinderGoal {
             this.e.bZ();
             entityageable.setAge(-24000);
             entityageable.setPositionRotation(this.d.locX, this.d.locY, this.d.locZ, 0.0F, 0.0F);
-            this.a.addEntity(entityageable, org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason.BREEDING); // CraftBukkit - added SpawnReason
+
+            // CraftBukkit start
             Random random = this.d.aC();
+            int experienceToDrop = random.nextInt(7) + 1;
+            EntityBornEvent event = new EntityBornEvent((Ageable) entityageable.getBukkitEntity(), ImmutableList.<Ageable>of((Ageable) this.d.getBukkitEntity(), (Ageable) this.e.getBukkitEntity()), experienceToDrop);
+            this.a.getServer().getPluginManager().callEvent(event);
+            if (event.isCancelled() || !this.d.isAlive() || !entityageable.isAlive() || !this.e.isAlive()) {
+                return;
+            }
+
+            experienceToDrop = event.getExperienceToDrop();
+            // CraftBukkit end
+
+            this.a.addEntity(entityageable, org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason.BREEDING); // CraftBukkit - added SpawnReason
 
             for (int i = 0; i < 7; ++i) {
                 double d0 = random.nextGaussian() * 0.02D;
@@ -86,7 +104,7 @@ public class PathfinderGoalBreed extends PathfinderGoal {
                 this.a.addParticle("heart", this.d.locX + (double) (random.nextFloat() * this.d.width * 2.0F) - (double) this.d.width, this.d.locY + 0.5D + (double) (random.nextFloat() * this.d.length), this.d.locZ + (double) (random.nextFloat() * this.d.width * 2.0F) - (double) this.d.width, d0, d1, d2);
             }
 
-            this.a.addEntity(new EntityExperienceOrb(this.a, this.d.locX, this.d.locY, this.d.locZ, random.nextInt(7) + 1));
+            this.a.addEntity(new EntityExperienceOrb(this.a, this.d.locX, this.d.locY, this.d.locZ, experienceToDrop)); // CraftBukkit - moved random xp calculation up
         }
     }
 }

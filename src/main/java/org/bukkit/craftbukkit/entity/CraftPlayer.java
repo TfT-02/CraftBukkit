@@ -1,5 +1,6 @@
 package org.bukkit.craftbukkit.entity;
 
+import com.google.common.base.Charsets;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.MapMaker;
 
@@ -878,6 +879,7 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
         }
     }
 
+    @Deprecated
     public void setTexturePack(String url) {
         Validate.notNull(url, "Texture pack URL cannot be null");
 
@@ -885,6 +887,15 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
         Validate.isTrue(message.length <= Messenger.MAX_MESSAGE_SIZE, "Texture pack URL is too long");
 
         getHandle().playerConnection.sendPacket(new PacketPlayOutCustomPayload("MC|TPack", message));
+    }
+
+    public void setResourcePack(String url) {
+        Validate.notNull(url, "Resource pack URL cannot be null");
+
+        byte[] message = url.getBytes(Charsets.UTF_8);
+        Validate.isTrue(message.length <= Messenger.MAX_MESSAGE_SIZE, "Resource pack URL is too long");
+
+        getHandle().playerConnection.sendPacket(new PacketPlayOutCustomPayload("MC|RPack", message));
     }
 
     public void addChannel(String channel) {
